@@ -755,6 +755,17 @@
     </div>
   </div>
 
+  <div class="celebration-overlay hidden" id="celebrationOverlay">
+    <canvas id="confettiCanvas"></canvas>
+    <div class="celebration-card">
+      <span class="celebration-trophy">🏆</span>
+      <h2 id="celebrationTitle">Well Done!</h2>
+      <p id="celebrationScore"></p>
+      <div class="star-rating" id="starRating">⭐⭐⭐</div>
+      <button class="btn btn-primary celebration-btn" type="button" id="celebrationPlayAgain">Play Again!</button>
+    </div>
+  </div>
+
   <script>
     (() => {
       const copy = {
@@ -1743,16 +1754,6 @@
       setFeedback(copy.english.feedbackReady, "");
     })();
   </script>
-  <div class="celebration-overlay hidden" id="celebrationOverlay">
-    <canvas id="confettiCanvas"></canvas>
-    <div class="celebration-card">
-      <span class="celebration-trophy">🏆</span>
-      <h2 id="celebrationTitle">Well Done!</h2>
-      <p id="celebrationScore"></p>
-      <div class="star-rating" id="starRating">⭐⭐⭐</div>
-      <button class="btn btn-primary celebration-btn" type="button" id="celebrationPlayAgain">Play Again!</button>
-    </div>
-  </div>
 
 </body>
 </html>
