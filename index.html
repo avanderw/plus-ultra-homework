@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Plus Ultra Prototype 2</title>
+  <title>Plus Ultra Homework</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -905,7 +905,8 @@
         muted: false,
         audioContext: null,
         autoListenTimer: null,
-        confettiFrame: null
+        confettiFrame: null,
+        wakeLock: null
       };
 
       const storageKeys = {
@@ -917,6 +918,14 @@
         standard: "success.mp3",
         half: "midpoint.mp3",
         final: "finale.mp3"
+      };
+
+      const numberWordMap = {
+        zero: "0", one: "1", two: "2", three: "3", four: "4", five: "5", six: "6", seven: "7", eight: "8", nine: "9", ten: "10",
+        eleven: "11", twelve: "12", thirteen: "13", fourteen: "14", fifteen: "15", sixteen: "16", seventeen: "17", eighteen: "18", nineteen: "19", twenty: "20",
+        nul: "0", een: "1", twee: "2", drie: "3", vier: "4", vyf: "5", ses: "6", sewe: "7", agt: "8", nege: "9", tien: "10",
+        elf: "11", twaalf: "12", dertien: "13", veertien: "14", vyftien: "15", sestien: "16", sewentien: "17", agtien: "18", negentien: "19", twintig: "20",
+        shoonya: "0", ek: "1", do: "2", teen: "3", char: "4", paanch: "5", paanchh: "5", chhah: "6", saat: "7", aath: "8", nau: "9", das: "10"
       };
 
       const el = {
@@ -1149,6 +1158,35 @@
         }, 1100);
       }
 
+      async function requestWakeLock() {
+        if (!("wakeLock" in navigator)) {
+          return;
+        }
+        try {
+          if (!state.wakeLock) {
+            state.wakeLock = await navigator.wakeLock.request("screen");
+            state.wakeLock.addEventListener("release", () => {
+              state.wakeLock = null;
+            });
+          }
+        } catch (e) {}
+      }
+
+      function releaseWakeLock() {
+        if (!state.wakeLock) {
+          return;
+        }
+        state.wakeLock.release().catch(() => {});
+        state.wakeLock = null;
+      }
+
+      function normalizeNumberWords(value) {
+        return value
+          .split(" ")
+          .map((token) => numberWordMap[token] || token)
+          .join(" ");
+      }
+
       function parseList(text) {
         return text
           .split(/\r?\n|,/)
@@ -1181,12 +1219,13 @@
       }
 
       function normalize(value) {
-        return value
+        const cleaned = value
           .toLowerCase()
           .normalize("NFC")
           .replace(/[^\p{L}\p{N}\s]/gu, " ")
           .replace(/\s+/g, " ")
           .trim();
+        return normalizeNumberWords(cleaned);
       }
 
       function distance(a, b) {
@@ -1425,6 +1464,7 @@
         el.manualAnswer.value = "";
         if (!currentEntry()) {
           updateProgressBar();
+          releaseWakeLock();
           showCelebration(state.score, state.queue.length);
         } else {
           renderProgress();
@@ -1513,6 +1553,7 @@
         el.practiceCard.classList.remove("hidden");
         renderProgress();
         setFeedback(currentCopy().feedbackReady, "");
+        requestWakeLock();
         scheduleAutoListen();
       });
 
@@ -1527,6 +1568,7 @@
 
       el.restartBtn.addEventListener("click", () => {
         if (state.autoListenTimer) clearTimeout(state.autoListenTimer);
+        releaseWakeLock();
         state.queue = [];
         state.index = 0;
         state.score = 0;
@@ -1560,6 +1602,7 @@
 
       el.celebrationPlayAgain.addEventListener("click", () => {
         hideCelebration();
+        releaseWakeLock();
         state.queue = [];
         state.index = 0;
         state.score = 0;
@@ -1581,6 +1624,14 @@
       if (savedWords) {
         el.wordList.value = savedWords;
       }
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && currentEntry()) {
+          requestWakeLock();
+        }
+        if (document.visibilityState === "hidden") {
+          releaseWakeLock();
+        }
+      });
       renderSwitches();
       setFeedback(copy.english.feedbackReady, "");
     })();
