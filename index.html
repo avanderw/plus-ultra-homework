@@ -1646,6 +1646,10 @@
         el.progressStars.innerHTML = "";
         el.practiceCard.classList.remove("hidden");
         renderProgress();
+        requestAnimationFrame(() => {
+          el.practiceCard.scrollIntoView({ behavior: "smooth", block: "start" });
+          el.promptWord.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
         setFeedback(currentCopy().feedbackReady, "");
         requestWakeLock();
         scheduleAutoListen();
